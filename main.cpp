@@ -1,25 +1,48 @@
 #include <atomic>
 #include <iostream>
 #include <thread>
+#include <vector>
+void TestOderRelaxed2() {
+  std::atomic<int> a{0};
+  std::vector<int> v3, v4;
+  std::thread t1([&a]() {
+    for (int i = 0; i < 10; i += 2) {
+      a.store(i, std::memory_order_relaxed);
+    }
+  });
 
-std::atomic<int> shared_var(0);
+  std::thread t2([&a]() {
+    for (int i = 1; i < 10; i += 2)
+      a.store(i, std::memory_order_relaxed);
+  });
 
-void writer() {
-  shared_var.store(1, std::memory_order_release); // 写操作，释放内存序
-}
+  std::thread t3([&v3, &a]() {
+    for (int i = 0; i < 10; ++i)
+      v3.push_back(a.load(std::memory_order_relaxed));
+  });
 
-void reader() {
-  while (!shared_var.load(std::memory_order_acquire)) { // 读操作，获取内存序
-    // 等待 shared_var 变为 1
-  }
-  std::cout << "Reader sees shared_var as 1" << std::endl;
-}
-
-int main() {
-  std::thread t1(writer);
-  std::thread t2(reader);
+  std::thread t4([&v4, &a]() {
+    for (int i = 0; i < 10; ++i)
+      v4.push_back(a.load(std::memory_order_relaxed));
+  });
 
   t1.join();
   t2.join();
+  t3.join();
+  t4.join();
+
+  for (int i : v3) {
+    std::cout << i << " ";
+  }
+
+  std::cout << std::endl;
+  for (int i : v4) {
+    std::cout << i << " ";
+  }
+  std::cout << std::endl;
+}
+
+int main() {
+  TestOderRelaxed2();
   return 0;
 }
