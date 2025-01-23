@@ -5,7 +5,7 @@
 std::atomic<int> counter(0);
 
 void increment() {
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 10000; ++i) {
     counter.fetch_add(1, std::memory_order_relaxed);
   }
 }
