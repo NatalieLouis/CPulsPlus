@@ -1,30 +1,20 @@
 #include <iostream>
 
-// 原始模板定义
-template <typename T>
-class MyClass {
-public:
-    void print()
-    {
-        std::cout << "General template" << std::endl;
-    }
-};
+template <typename T, typename U>
+void testestt()
+{
+    std::cout << "Hello world" << std::endl;
+}
 
-// 偏特化：为所有指针类型提供特化实现
-template <typename T>
-class MyClass<T*> {
-public:
-    void print()
-    {
-        std::cout << "Specialized for pointer" << std::endl;
-    }
-};
+template <typename T, int>
+void testestt()
+{
+    std::cout << "Bye world" << std::endl;
+}
 
 int main()
 {
-    MyClass<int> obj1; // 使用原始模板
-    MyClass<int*> obj2; // 使用偏特化实现
-
-    obj1.print(); // 输出：General template
-    obj2.print(); // 输出：Specialized for pointer
+    testestt<int, double>(); // 调用第一个模板函数
+    testestt<int, 42>(); // 调用第二个模板函数  函数重载而不叫偏特化
+    return 0;
 }
