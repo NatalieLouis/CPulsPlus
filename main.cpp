@@ -1,17 +1,16 @@
+#include <concepts>
 #include <iostream>
 #include <type_traits>
 
-// 使用 std::void_t 简化 has_foo
-template <typename, typename = std::void_t<>>
-struct has_foo : std::false_type { };
-
+// 定义一个概念，要求类型 T 具有 void foo()
 template <typename T>
-struct has_foo<T, std::void_t<decltype(std::declval<T>().foo())>> : std::true_type { };
+concept HasFoo = requires(T t) {
+    { t.foo() } -> std::same_as<void>;
+};
 
-// 函数仅在 T 有 foo() 成员时启用
-template <typename T>
-std::enable_if_t<has_foo<T>::value, void>
-call_foo(T& obj)
+// 仅当 T 满足 HasFoo 概念时启用
+template <HasFoo T>
+void call_foo(T& obj)
 {
     obj.foo();
     std::cout << "foo() called." << std::endl;
@@ -31,6 +30,6 @@ int main()
                   //      foo() called.
 
     // WithoutFoo wf2;
-    // call_foo(wf2); // 编译错误，没有匹配的函数
+    // call_foo(wf2); // 编译错误，不满足 HasFoo 概念
     return 0;
 }
