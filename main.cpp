@@ -1,39 +1,32 @@
 #include <iostream>
-#include <type_traits> // 用于测试
+#include <list>
+#include <vector>
 
 // 基本模板
 template <typename T>
-struct is_integral_type {
-    static constexpr bool value = false;
+struct value_type_traits {
+    using type = void; // 默认类型
 };
 
-// 特化模板，针对所有整数类型
-template <>
-struct is_integral_type<int> {
-    static constexpr bool value = true;
+// 特化模板，针对标准容器
+template <typename T>
+struct value_type_traits<std::vector<T>> {
+    using type = T;
 };
 
-template <>
-struct is_integral_type<long> {
-    static constexpr bool value = true;
-};
-
-template <>
-struct is_integral_type<unsigned int> {
-    static constexpr bool value = true;
-};
-
-template <>
-struct is_integral_type<long long> {
-    static constexpr bool value = true;
+template <typename T>
+struct value_type_traits<std::list<T>> {
+    using type = T;
 };
 
 // 测试代码
 int main()
 {
-    std::cout << std::boolalpha; // 打印布尔值为 true/false
-    std::cout << "is_integral_type<int>: " << is_integral_type<int>::value << std::endl;
-    std::cout << "is_integral_type<double>: " << is_integral_type<double>::value << std::endl;
-    std::cout << "is_integral_type<unsigned int>: " << is_integral_type<unsigned int>::value << std::endl;
+    using VecType = std::vector<int>;
+    using ValueType = value_type_traits<VecType>::type;
+
+    std::cout << "VecType: " << typeid(VecType).name() << std::endl;
+    std::cout << "ValueType: " << typeid(ValueType).name() << std::endl;
+
     return 0;
 }
