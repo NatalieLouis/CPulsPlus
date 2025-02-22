@@ -5,20 +5,24 @@
 // 定义一个概念，要求类型 T 具有 void foo()
 template <typename T>
 concept HasFoo = requires(T t) {
-    { t.foo() } -> std::same_as<void>;
+    { t.foo(std::declval<int>()) } -> std::same_as<int>;
 };
 
 // 仅当 T 满足 HasFoo 概念时启用
 template <HasFoo T>
 void call_foo(T& obj)
 {
-    obj.foo();
+    obj.foo(3);
     std::cout << "foo() called." << std::endl;
 }
 
 class WithFoo {
 public:
-    void foo() { std::cout << "WithFoo::foo()" << std::endl; }
+    int foo(double x)
+    {
+        std::cout << "WithFoo::foo()" << std::endl;
+        return x;
+    }
 };
 
 class WithoutFoo { };
