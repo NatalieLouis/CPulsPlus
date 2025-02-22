@@ -1,48 +1,41 @@
-#include <atomic>
 #include <iostream>
-#include <thread>
-#include <vector>
-void TestOderRelaxed2() {
-  std::atomic<int> a{0};
-  std::vector<int> v3, v4;
-  std::thread t1([&a]() {
-    for (int i = 0; i < 10; i += 2) {
-      a.store(i, std::memory_order_relaxed);
-    }
-  });
+#include <type_traits>
 
-  std::thread t2([&a]() {
-    for (int i = 1; i < 10; i += 2)
-      a.store(i, std::memory_order_relaxed);
-  });
+// 辅助类型，检测是否存在成员函数 foo
+template <typename T> class has_foo {
+private:
+  typedef char yes[1];
+  typedef char no[2];
 
-  std::thread t3([&v3, &a]() {
-    for (int i = 0; i < 10; ++i)
-      v3.push_back(a.load(std::memory_order_relaxed));
-  });
+  template <typename U, void (U::*)()> struct SFINAE {};
 
-  std::thread t4([&v4, &a]() {
-    for (int i = 0; i < 10; ++i)
-      v4.push_back(a.load(std::memory_order_relaxed));
-  });
+  template <typename U> static yes &test(SFINAE<U, &U::foo> *);
 
-  t1.join();
-  t2.join();
-  t3.join();
-  t4.join();
+  template <typename U> static no &test(...);
 
-  for (int i : v3) {
-    std::cout << i << " ";
-  }
+public:
+  static constexpr bool value = sizeof(test<T>(0)) == sizeof(yes);
+};
 
-  std::cout << std::endl;
-  for (int i : v4) {
-    std::cout << i << " ";
-  }
-  std::cout << std::endl;
+// 函数仅在 T 有 foo() 成员时启用
+template <typename T>
+typename std::enable_if<has_foo<T>::value, void>::type call_foo(T &obj) {
+  obj.foo();
+  std::cout << "foo() called." << std::endl;
 }
 
+class WithFoo {
+public:
+  void foo() { std::cout << "WithFoo::foo()" << std::endl; }
+};
+
+class WithoutFoo {};
+
 int main() {
-  TestOderRelaxed2();
+  WithFoo wf;
+  call_foo(wf); // 输出: WithFoo::foo() \n foo() called.
+
+  // WithoutFoo wf2;
+  // call_foo(wf2); // 编译错误，没有匹配的函数
   return 0;
 }
