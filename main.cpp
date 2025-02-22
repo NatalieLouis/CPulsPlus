@@ -1,32 +1,21 @@
 #include <iostream>
 #include <list>
+#include <type_traits>
 #include <vector>
 
-// 基本模板
-template <typename T>
-struct value_type_traits {
-    using type = void; // 默认类型
-};
-
-// 特化模板，针对标准容器
-template <typename T>
-struct value_type_traits<std::vector<T>> {
-    using type = T;
-};
+// SFINAE 检查成员函数
+template <typename T, typename = void>
+struct has_size_member : std::false_type { };
 
 template <typename T>
-struct value_type_traits<std::list<T>> {
-    using type = T;
-};
+struct has_size_member<T, std::void_t<decltype(std::declval<T>().size())>> : std::true_type { };
 
 // 测试代码
 int main()
 {
-    using VecType = std::vector<int>;
-    using ValueType = value_type_traits<VecType>::type;
-
-    std::cout << "VecType: " << typeid(VecType).name() << std::endl;
-    std::cout << "ValueType: " << typeid(ValueType).name() << std::endl;
-
+    std::cout << std::boolalpha;
+    std::cout << "has_size_member<std::vector<int>>: " << has_size_member<std::vector<int>>::value << std::endl; // true
+    std::cout << "has_size_member<std::list<int>>: " << has_size_member<std::list<int>>::value << std::endl; // true
+    std::cout << "has_size_member<int>: " << has_size_member<int>::value << std::endl; // false
     return 0;
 }
