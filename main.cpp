@@ -1,20 +1,26 @@
 #include <iostream>
+#include <type_traits> // 注意是 type_traits 而不是 typetraits
 
-template <typename T, typename U>
-void testestt()
-{
-    std::cout << "Hello world" << std::endl;
-}
+// 原始模板定义，使用一个额外的参数进行 SFINAE
+template <typename T, typename = void>
+class HasFoo : public std::false_type {
+};
 
-template <typename T, int>
-void testestt()
-{
-    std::cout << "Bye world" << std::endl;
-}
+// 偏特化：为具有成员函数 foo 的类型提供特化
+template <typename T>
+class HasFoo<T, std::void_t<decltype(&T::foo)>> : public std::true_type {
+};
+
+struct A {
+    void foo() { }
+};
+
+struct B {
+};
 
 int main()
 {
-    testestt<int, double>(); // 调用第一个模板函数
-    testestt<int, 42>(); // 调用第二个模板函数  函数重载而不叫偏特化
-    return 0;
+    std::cout << std::boolalpha;
+    std::cout << "HasFoo<A>::value: " << HasFoo<A>::value << std::endl; // 输出：true
+    std::cout << "HasFoo<B>::value: " << HasFoo<B>::value << std::endl; // 输出：false
 }
