@@ -1,0 +1,17 @@
+# nvim 
+## nvim 的自带分屏
+- ctrl+w +v/s 复制分屏
+- ctrl+w+l/h/j/k 移动
+- ctrl+w+x exchange
+- :q close
+- :new
+
+---
+## 命令行支持
+- :source % 可以在normal下source 文件
+# tmux
+- ctrl+b+n 下一个window
+
+模板偏特化是针对模板类或模板结构体的一种特化形式。与全特化（Full Specialization）不同，
+偏特化不需要完全指定所有模板参数，而是可以指定一部分参数，而其他参数仍然保持通用。
+与类模板不同，函数模板不支持偏特化，只能进行全特化。当对函数模板进行全特化时，需要显式指定类型。

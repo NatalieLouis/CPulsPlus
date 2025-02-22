@@ -1,52 +1,30 @@
 #include <iostream>
-#include <string>
 
-// 通用 Pair 类模板
-template <typename T, typename U>
-class Pair {
+// 原始模板定义
+template <typename T>
+class MyClass {
 public:
-    T first;
-    U second;
-
-    Pair(T a, U b)
-        : first(a)
-        , second(b)
+    void print()
     {
-    }
-
-    void print() const
-    {
-        std::cout << "Pair: " << first << ", " << second << std::endl;
+        std::cout << "General template" << std::endl;
     }
 };
 
-// 类模板偏特化：当第二个类型是指针时
-template <typename T, typename U>
-class Pair<T, U*> {
+// 偏特化：为所有指针类型提供特化实现
+template <typename T>
+class MyClass<T*> {
 public:
-    T first;
-    U* second;
-
-    Pair(T a, U* b)
-        : first(a)
-        , second(b)
+    void print()
     {
-    }
-
-    void print() const
-    {
-        std::cout << "Pair with pointer: " << first << ", " << *second << std::endl;
+        std::cout << "Specialized for pointer" << std::endl;
     }
 };
 
 int main()
 {
-    Pair<int, double> p1(1, 2.5);
-    p1.print(); // 输出：Pair: 1, 2.5
+    MyClass<int> obj1; // 使用原始模板
+    MyClass<int*> obj2; // 使用偏特化实现
 
-    double value = 3.14;
-    Pair<std::string, double*> p2("Pi", &value);
-    p2.print(); // 输出：Pair with pointer: Pi, 3.14
-
-    return 0;
+    obj1.print(); // 输出：General template
+    obj2.print(); // 输出：Specialized for pointer
 }
