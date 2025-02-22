@@ -1,26 +1,48 @@
 #include <iostream>
-#include <type_traits> // 注意是 type_traits 而不是 typetraits
+#include <type_traits>
 
-// 原始模板定义，使用一个额外的参数进行 SFINAE
-template <typename T, typename = void>
-class HasFoo : public std::false_type {
-};
-
-// 偏特化：为具有成员函数 foo 的类型提供特化
+// 辅助类型，检测是否存在成员函数 foo
 template <typename T>
-class HasFoo<T, std::void_t<decltype(&T::foo)>> : public std::true_type {
+class has_foo {
+private:
+    typedef char yes[1];
+    typedef char no[2];
+
+    template <typename U, void (U::*)()>
+    struct SFINAE { };
+
+    template <typename U>
+    static yes& test(SFINAE<U, &U::foo>*);
+
+    template <typename U>
+    static no& test(...);
+
+public:
+    static constexpr bool value = sizeof(test<T>(0)) == sizeof(yes);
 };
 
-struct A {
-    void foo() { }
+// 函数仅在 T 有 foo() 成员时启用
+template <typename T>
+typename std::enable_if<has_foo<T>::value, void>::type
+call_foo(T& obj)
+{
+    obj.foo();
+    std::cout << "foo() called." << std::endl;
+}
+
+class WithFoo {
+public:
+    void foo() { std::cout << "WithFoo::foo()" << std::endl; }
 };
 
-struct B {
-};
+class WithoutFoo { };
 
 int main()
 {
-    std::cout << std::boolalpha;
-    std::cout << "HasFoo<A>::value: " << HasFoo<A>::value << std::endl; // 输出：true
-    std::cout << "HasFoo<B>::value: " << HasFoo<B>::value << std::endl; // 输出：false
+    WithFoo wf;
+    call_foo(wf); // 输出: WithFoo::foo() \n foo() called.
+
+    // WithoutFoo wf2;
+    // call_foo(wf2); // 编译错误，没有匹配的函数
+    return 0;
 }
