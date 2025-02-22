@@ -1,51 +1,20 @@
+#include <concepts>
 #include <iostream>
-#include <type_traits>
 
-// 1. 定义一个 Trait 用于检测 T 是否有非 void 的 `value_type`
-template <typename T, typename = void>
-struct has_non_void_value_type : std::false_type { };
-
-// 仅当 T 有 `value_type` 且 `value_type` 不是 void 时，特化为 std::true_type
+// 定义一个概念，要求类型 T 是整数类型
 template <typename T>
-struct has_non_void_value_type<T, std::enable_if_t<!std::is_void_v<typename T::value_type>>> : std::true_type { };
+concept Integral = std::is_integral_v<T>;
 
-// 2. 定义 TypePrinter 主模板，使用一个布尔参数控制特化
-template <typename T, bool HasValueType = has_non_void_value_type<T>::value>
-struct TypePrinter;
-
-// 3. 特化：当 HasValueType 为 true 时，表示 T 有非 void 的 `value_type`
-template <typename T>
-struct TypePrinter<T, true> {
-    static void print()
-    {
-        std::cout << "T has a member type 'value_type'." << std::endl;
-    }
-};
-
-// 特化：当 HasValueType 为 false 时，表示 T 没有 `value_type` 或 `value_type` 是 void
-template <typename T>
-struct TypePrinter<T, false> {
-    static void print()
-    {
-        std::cout << "hello world! T does not have a member type 'value_type'." << std::endl;
-    }
-};
-
-// 测试结构体
-struct WithValueType {
-    using value_type = int;
-};
-
-struct WithoutValueType { };
-
-struct WithVoidValueType {
-    using value_type = void;
-};
+// 仅当 T 满足 Integral 概念时启用
+template <Integral T>
+void print_type(T value)
+{
+    std::cout << "Integral type: " << value << std::endl;
+}
 
 int main()
 {
-    TypePrinter<WithValueType>::print(); // 输出: T has a member type 'value_type'.
-    TypePrinter<WithoutValueType>::print(); // 输出: hello world! T does not have a member type 'value_type'.
-    TypePrinter<WithVoidValueType>::print(); // 输出: hello world! T does not have a member type 'value_type'.
+    print_type(42); // 输出: Integral type: 42
+    // print_type(3.14);   // 编译错误，不满足 Integral 概念
     return 0;
 }
